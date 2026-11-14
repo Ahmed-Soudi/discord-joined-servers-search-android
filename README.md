@@ -1,6 +1,6 @@
 # Discord Joined Servers Search for Android
 
-A **rootless**, personal-use floating search overlay for the official Discord Android app. Separate project from the PC Chrome extension.
+A personal-use floating search overlay for the official Discord Android app. Separate project from the PC Chrome extension.
 
 ## Status: experimental v1.0.0 scaffold
 
@@ -19,7 +19,7 @@ A **rootless**, personal-use floating search overlay for the official Discord An
 ## Limitations and privacy
 
 - Accessibility is configured with `canRetrieveWindowContent=false`; no Discord screen content is read.
-- No Discord credentials, account tokens, API calls, root, or client hooks.
+- No Discord credentials, account tokens, API calls, or client hooks.
 - Manual server names/IDs are saved locally in app-private preferences.
 - Opening a server uses `https://discord.com/channels/SERVER_ID` through Android's ACTION_VIEW; actual app routing must be tested.
 - Accessibility window events from keyboards/system dialogs may cause temporary overlay visibility changes. Further device testing is needed.
@@ -30,7 +30,7 @@ This project is unofficial and is not affiliated with Discord. No guarantee is m
 
 ## v1.1.0: App detection and manual popup
 
-- Detects whether the official Discord Android package (`com.discord`) is installed, without root.
+- Detects whether the official Discord Android package (`com.discord`) is installed, 
 - When Discord is installed and Accessibility is enabled, the popup follows Discord foreground state.
 - **Open search popup** in the launcher opens the overlay manually, including on devices without Discord installed.
 - The **×** button closes the popup. After closing during a Discord session, it stays dismissed until Discord is reopened or the launcher is used again.
