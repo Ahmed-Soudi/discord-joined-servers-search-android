@@ -34,7 +34,8 @@ public class FloatingSearch {
         if (show && Settings.canDrawOverlays(context)) { create(); try { manager.addView(root,params); visible=true; } catch (RuntimeException ex) { root=null; } }
         else if (!show && visible) {manager.removeView(root); root=null; visible=false;}
     }
-    void destroy() {setVisible(false);}\n    void dataChanged(){if(visible)refresh();}
+    void destroy() {setVisible(false);}
+    void dataChanged(){if(visible)refresh();}
     private int dp(int n) {return (int)(n*context.getResources().getDisplayMetrics().density);}
     private void create() {
         params = new WindowManager.LayoutParams(dp(290),WindowManager.LayoutParams.WRAP_CONTENT,
