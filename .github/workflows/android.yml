@@ -11,17 +11,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
 
-      - name: Install Android SDK packages
+      - name: Install Android SDK command-line tools
+        shell: bash
         run: |
-          echo "ANDROID_HOME=$ANDROID_HOME"
-          yes | sdkmanager --licenses > /dev/null || true
-          sdkmanager --install "platforms;android-35" "build-tools;35.0.0"
+          set -euo pipefail
+          export ANDROID_HOME="${ANDROID_HOME:-$HOME/android-sdk}"
+          echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
+          mkdir -p "$ANDROID_HOME/cmdline-tools"
+          curl --fail --location --retry 3 --output /tmp/android-commandlinetools.zip \
+            "https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip"
+          unzip -q /tmp/android-commandlinetools.zip -d /tmp/android-commandlinetools
+          mv /tmp/android-commandlinetools/cmdline-tools "$ANDROID_HOME/cmdline-tools/latest"
+          echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --version
+          set +o pipefail
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_HOME" --licenses >/dev/null
+          set -o pipefail
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_HOME" --install \
+            "platforms;android-35" "build-tools;35.0.0"
 
       - name: Install Gradle
         uses: gradle/actions/setup-gradle@v4
