@@ -63,17 +63,19 @@ public class FloatingSearch {
         search.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int count,int after){} public void onTextChanged(CharSequence s,int start,int before,int count){if(!expanded){expanded=true;scroller.setVisibility(View.VISIBLE);toggle.setText("▴");}refresh();}public void afterTextChanged(Editable e){} });
     }
     private void openDiscordServer(String id) {
-        // Discord's route uses the special "-" host. The previous
-        // discord://discord.com/channels/... URI only launched the app.
+        // Use a standard HTTPS ACTION_VIEW explicitly delivered to Discord.
+        // Do not use SINGLE_TOP: Discord may need a new deep-link activity
+        // instead of reusing the foreground activity.
         Intent intent = new Intent(Intent.ACTION_VIEW,
-            Uri.parse("discord://-/channels/" + id));
+            Uri.parse("https://discord.com/channels/" + id));
         intent.setPackage("com.discord");
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        intent.addCategory(Intent.CATEGORY_BROWSABLE);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         try {
             context.startActivity(intent);
         } catch (android.content.ActivityNotFoundException ex) {
             android.widget.Toast.makeText(context,
-                "This Discord version cannot handle server deep links.",
+                "Discord does not accept this server link on this device.",
                 android.widget.Toast.LENGTH_LONG).show();
         }
     }
