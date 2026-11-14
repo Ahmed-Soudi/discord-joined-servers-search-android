@@ -62,6 +62,28 @@ public class FloatingSearch {
         toggle.setOnClickListener(v->{expanded=!expanded;scroller.setVisibility(expanded?View.VISIBLE:View.GONE);toggle.setText(expanded?"▴":"▾");refresh();});
         search.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int count,int after){} public void onTextChanged(CharSequence s,int start,int before,int count){if(!expanded){expanded=true;scroller.setVisibility(View.VISIBLE);toggle.setText("▴");}refresh();}public void afterTextChanged(Editable e){} });
     }
+    private void openDiscordServer(String id) {
+        // Target Discord explicitly so Android does not route the link to Chrome.
+        // NEW_TASK is required because this overlay belongs to a Service.
+        String[] links = {
+            "https://discord.com/channels/" + id,
+            "discord://discord.com/channels/" + id
+        };
+        for (String link : links) {
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(link));
+            intent.setPackage("com.discord");
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            try {
+                context.startActivity(intent);
+                return;
+            } catch (android.content.ActivityNotFoundException ignored) {
+                // Try Discord's custom URI if its HTTPS handler is unavailable.
+            }
+        }
+        android.widget.Toast.makeText(context,
+            "Unable to open server in Discord. Check that Discord is installed.",
+            android.widget.Toast.LENGTH_LONG).show();
+    }
     private void refresh() {
         if(results==null)return;results.removeAllViews();
         String q=search.getText().toString().trim().toLowerCase(java.util.Locale.ROOT);
@@ -72,8 +94,7 @@ public class FloatingSearch {
                 String name=guild.getString("name"),id=guild.getString("id");
                 if(!name.toLowerCase(java.util.Locale.ROOT).contains(q))continue;
                 Button b=new Button(context);b.setAllCaps(false);b.setText(name);results.addView(b);
-                b.setOnClickListener(v->{Intent i=new Intent(Intent.ACTION_VIEW,Uri.parse("https://discord.com/channels/"+id));
-                    i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);context.startActivity(i);});
+                b.setOnClickListener(v->openDiscordServer(id));
             }
         }catch(org.json.JSONException e){ }
         if(results.getChildCount()==0){
