@@ -1,40 +1,48 @@
 # Discord Joined Servers Search for Android
 
-A personal-use floating search overlay for the official Discord Android app. Separate project from the PC Chrome extension.
+Quickly find and open **Discord servers you've already joined** using a floating search window on Android.
 
-## Status: experimental v1.0.0 scaffold
+**Joined servers** means servers that are already part of your Discord account. This is **not** a public server discovery tool, server directory, or tool for joining new servers.
 
-**Implemented:** Discord foreground detection via Accessibility events, overlay show/hide, draggable position with persistence, compact search box, expandable/filterable server list, manually entered server names and IDs, Android build workflow.
+This is the Android companion project to the Discord Joined Servers Search Chrome extension. It is unofficial and not affiliated with Discord.
 
-**Not implemented:** Discord OAuth2, automatic joined-server synchronization, verified Discord deep-link navigation, signed release APK. **Do not mistake this for full feature parity with the Chrome extension.** The manual server list is an interim implementation, not a substitute for OAuth.
+## How it works
 
-## Setup
+- A draggable floating search box lets you filter your **joined servers** by name.
+- The search window remembers its position.
+- Expand the search box to view the matching server list.
+- If the Discord Android app is installed and Accessibility is enabled, the popup can appear when Discord is in the foreground and hide when you leave it.
+- If Discord is not installed, you can launch the search popup manually from this app.
+- You can also open it manually when Discord is installed.
+- Tap **×** to close the popup. When dismissed during a Discord session, it stays closed until Discord is reopened or you launch the popup again.
+- Entries with server IDs can be opened through Android's link handling; whether they open in a browser or Discord depends on device settings.
 
-1. Create a new repository named `discord-joined-servers-search-android` under your GitHub account.
-2. Push these files to `main`. The workflow builds a debug APK under Actions → latest run → Artifacts.
-3. Install the APK, open the app, grant **Draw over other apps** and enable the Accessibility service. On Android 13+, sideloaded apps may require enabling **Allow restricted settings** in the app's system App info menu before Accessibility can be enabled.
-4. Add entries like `My Server | 123456789012345678` (one per line). Only server names without IDs can be searched, not opened.
-5. Open Discord. The search overlay should appear. Leave Discord and it should disappear.
+## Current development status: v1.1.0 prototype
 
-## Limitations and privacy
+**Implemented in source:** floating overlay, foreground detection, manual opening, close/dismiss behavior, saved position, expandable search, filtering of manually entered server entries, and a GitHub Actions debug APK build workflow.
 
-- Accessibility is configured with `canRetrieveWindowContent=false`; no Discord screen content is read.
-- No Discord credentials, account tokens, API calls, or client hooks.
-- Manual server names/IDs are saved locally in app-private preferences.
-- Opening a server uses `https://discord.com/channels/SERVER_ID` through Android's ACTION_VIEW; actual app routing must be tested.
-- Accessibility window events from keyboards/system dialogs may cause temporary overlay visibility changes. Further device testing is needed.
-- Android overlay permission may need to be granted again after reinstalling.
-- Debug APK signing is for testing; do not assume it provides stable update compatibility across GitHub Actions runs. A persistent signing key is needed for releases.
+**Not yet implemented:** automatic retrieval of your joined servers using Discord OAuth2, verified navigation to every server, configurable browser-versus-app opening preferences, and a persistently signed release APK.
 
-This project is unofficial and is not affiliated with Discord. No guarantee is made about Discord's policies or app compatibility.
+**Important:** For now, you must enter server names and IDs manually. Automatic synchronization of joined servers is a planned feature, not something this version already provides.
 
-## v1.1.0: App detection and manual popup
+## Install and test
 
-- Detects whether the official Discord Android package (`com.discord`) is installed, 
-- When Discord is installed and Accessibility is enabled, the popup follows Discord foreground state.
-- **Open search popup** in the launcher opens the overlay manually, including on devices without Discord installed.
-- The **×** button closes the popup. After closing during a Discord session, it stays dismissed until Discord is reopened or the launcher is used again.
-- If Accessibility isn't enabled, manual launch uses a foreground service and a persistent notification while the popup is displayed. Closing the popup stops that service.
-- Android's overlay permission is required. Sideloaded Accessibility services may require enabling *Allow restricted settings* in Android's app-info screen.
+1. Open **Actions** in this repository and download the APK artifact from a successful Android build workflow run.
+2. Install the debug APK.
+3. Grant **Display over other apps** permission. Enable the Accessibility service if you want automatic appearance when Discord is open. Android 13+ may require **Allow restricted settings** in App info for sideloaded Accessibility services.
+4. Add one server per line in the form `My Joined Server | 123456789012345678`. Entries without IDs can be searched but not opened.
+5. Open Discord to test automatic appearance, or launch this app to open the popup manually. Use **×** to dismiss it.
 
-**Current limitations:** This is a source prototype, not a verified APK. Automatic OAuth2 guild sync and deep-link preference settings are not implemented. Server entries still require manual `Name | ServerID` input. Browser handling of Discord links depends on Android's verified-link settings.
+## Privacy and limitations
+
+- Accessibility is configured not to retrieve screen content; it is used for foreground-window events.
+- Server entries are stored locally in the app's private preferences.
+- This prototype does not request Discord credentials or account tokens and does not make Discord API calls.
+- Server links use `https://discord.com/channels/SERVER_ID`; actual routing depends on Android and installed applications.
+- Window events from keyboards or system dialogs may temporarily affect visibility.
+- This is experimental source code; a successful device build and behavior across Android versions have not yet been verified.
+- GitHub Actions debug signing may change between runs, so updates are not guaranteed to install over previous builds.
+
+## Distribution
+
+The source is maintained here, and Android builds are distributed through GitHub Actions. This project is separate from the PC Chrome extension.
