@@ -34,7 +34,7 @@ public class FloatingSearch {
         if (show && Settings.canDrawOverlays(context)) { create(); try { manager.addView(root,params); visible=true; } catch (RuntimeException ex) { root=null; } }
         else if (!show && visible) {manager.removeView(root); root=null; visible=false;}
     }
-    void destroy() {setVisible(false);}
+    void destroy() {setVisible(false);}\n    void dataChanged(){if(visible)refresh();}
     private int dp(int n) {return (int)(n*context.getResources().getDisplayMetrics().density);}
     private void create() {
         params = new WindowManager.LayoutParams(dp(290),WindowManager.LayoutParams.WRAP_CONTENT,
@@ -63,17 +63,22 @@ public class FloatingSearch {
     }
     private void refresh() {
         if(results==null)return;results.removeAllViews();
-        String source=context.getSharedPreferences("servers",0).getString("servers","");
-        // Activity preferences use a distinct file; retrieve them by activity preference name.
-        source=context.getSharedPreferences("MainActivity",0).getString("servers",source);
         String q=search.getText().toString().trim().toLowerCase(java.util.Locale.ROOT);
-        for(String line:source.split("\\n")) {
-            String[] parts=line.trim().split("\\|",2);String name=parts[0].trim();if(name.isEmpty()||!name.toLowerCase(java.util.Locale.ROOT).contains(q))continue;
-            Button b=new Button(context);b.setAllCaps(false);b.setText(name);results.addView(b);
-            if(parts.length>1 && parts[1].trim().matches("[0-9]{15,22}")) {
-                String id=parts[1].trim();b.setOnClickListener(v->{Intent i=new Intent(Intent.ACTION_VIEW,Uri.parse("https://discord.com/channels/"+id));i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);context.startActivity(i);});
-            } else {b.setEnabled(false);b.setText(name+" (ID needed)");}
+        try {
+            org.json.JSONArray guilds=new org.json.JSONArray(context.getSharedPreferences("joined_guilds",0).getString("list","[]"));
+            for(int j=0;j<guilds.length();j++){
+                org.json.JSONObject guild=guilds.getJSONObject(j);
+                String name=guild.getString("name"),id=guild.getString("id");
+                if(!name.toLowerCase(java.util.Locale.ROOT).contains(q))continue;
+                Button b=new Button(context);b.setAllCaps(false);b.setText(name);results.addView(b);
+                b.setOnClickListener(v->{Intent i=new Intent(Intent.ACTION_VIEW,Uri.parse("https://discord.com/channels/"+id));
+                    i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);context.startActivity(i);});
+            }
+        }catch(org.json.JSONException e){ }
+        if(results.getChildCount()==0){
+            TextView empty=new TextView(context);
+            empty.setText(DiscordAuth.connected(context)?"No matching joined servers. Try Sync joined servers now.":"Connect Discord in app settings.");
+            empty.setTextColor(-1);results.addView(empty);
         }
-        if(results.getChildCount()==0){TextView empty=new TextView(context);empty.setText("No matching servers. Add entries in app settings.");empty.setTextColor(-1);results.addView(empty);}
     }
 }
