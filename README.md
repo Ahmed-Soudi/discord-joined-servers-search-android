@@ -11,7 +11,7 @@ This is the Android companion project to the Discord Joined Servers Search Chrom
 - A draggable floating search box lets you filter your **joined servers** by name.
 - The search window remembers its position.
 - Expand the search box to view the matching server list.
-- If the Discord Android app is installed and Accessibility is enabled, the popup can appear when Discord is in the foreground and hide when you leave it.
+- If Discord is installed, grant Usage Access and start monitoring to show the popup when Discord is in the foreground and hide it when you leave.
 - If Discord is not installed, you can launch the search popup manually from this app.
 - You can also open it manually when Discord is installed.
 - Tap **×** to close the popup. When dismissed during a Discord session, it stays closed until Discord is reopened or you launch the popup again.
@@ -19,7 +19,7 @@ This is the Android companion project to the Discord Joined Servers Search Chrom
 
 ## Current development status: v1.1.0 prototype
 
-**Implemented in source:** floating overlay, foreground detection, manual opening, close/dismiss behavior, saved position, expandable search, filtering of manually entered server entries, and a GitHub Actions debug APK build workflow.
+**Implemented in source:** floating overlay, Usage Access foreground polling, manual opening, close/dismiss behavior, saved position, expandable search, filtering of manually entered server entries, and a GitHub Actions debug APK build workflow.
 
 **Not yet implemented:** automatic retrieval of your joined servers using Discord OAuth2, verified navigation to every server, configurable browser-versus-app opening preferences, and a persistently signed release APK.
 
@@ -29,13 +29,13 @@ This is the Android companion project to the Discord Joined Servers Search Chrom
 
 1. Open **Actions** in this repository and download the APK artifact from a successful Android build workflow run.
 2. Install the debug APK.
-3. Grant **Display over other apps** permission. Enable the Accessibility service if you want automatic appearance when Discord is open. Android 13+ may require **Allow restricted settings** in App info for sideloaded Accessibility services.
+3. Grant **Display over other apps** permission. Grant Usage Access and tap **Start automatic Discord monitoring** if you want the popup to follow Discord's foreground state. Monitoring runs as a foreground service with an ongoing notification.
 4. Add one server per line in the form `My Joined Server | 123456789012345678`. Entries without IDs can be searched but not opened.
 5. Open Discord to test automatic appearance, or launch this app to open the popup manually. Use **×** to dismiss it.
 
 ## Privacy and limitations
 
-- Accessibility is configured not to retrieve screen content; it is used for foreground-window events.
+- Accessibility is not used. Foreground detection uses Android Usage Access events, checked periodically while monitoring is enabled.
 - Server entries are stored locally in the app's private preferences.
 - This prototype does not request Discord credentials or account tokens and does not make Discord API calls.
 - Server links use `https://discord.com/channels/SERVER_ID`; actual routing depends on Android and installed applications.
@@ -46,3 +46,7 @@ This is the Android companion project to the Discord Joined Servers Search Chrom
 ## Distribution
 
 The source is maintained here, and Android builds are distributed through GitHub Actions. This project is separate from the PC Chrome extension.
+
+## Foreground monitoring (Usage Access)
+
+The app no longer uses Accessibility. To enable automatic visibility, grant Usage Access, grant overlay permission, and tap **Start automatic Discord monitoring**. This starts a foreground service with a persistent notification and checks for Discord foreground activity approximately every 1.2 seconds. Tap **Stop monitoring and close popup** to stop it. The monitor does not automatically restart after a device reboot. Opening the popup manually works independently of whether Discord is installed. This change does not guarantee Play Protect will permit installation.
