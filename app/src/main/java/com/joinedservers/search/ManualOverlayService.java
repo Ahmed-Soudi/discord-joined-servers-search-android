@@ -19,7 +19,7 @@ public class ManualOverlayService extends Service {
     public static final String ACTION_MONITOR = "com.joinedservers.search.MONITOR";
     public static final String ACTION_OPEN = "com.joinedservers.search.OPEN";
     private final Handler handler = new Handler(Looper.getMainLooper());
-    private FloatingSearch overlay;
+    private FloatingSearch overlay;\n    private long lastSync=0;\n    private final android.content.BroadcastReceiver updates=new android.content.BroadcastReceiver(){\n        @Override public void onReceive(android.content.Context c,Intent i){if(overlay!=null)overlay.dataChanged();}\n    };
     private boolean monitoring = false, discordForeground = false, dismissed = false, manual = false;
     private final Runnable poll = new Runnable() {
         @Override public void run() {
@@ -28,7 +28,7 @@ public class ManualOverlayService extends Service {
                 if (overlay != null) overlay.setVisible(false);
                 stopSelf(); return;
             }
-            String foreground = foregroundPackage();
+            if(System.currentTimeMillis()-lastSync>300000){lastSync=System.currentTimeMillis();if(DiscordAuth.connected(ManualOverlayService.this))DiscordAuth.sync(ManualOverlayService.this,e->{});}\n            String foreground = foregroundPackage();
             if (foreground != null) {
                 boolean nowDiscord = "com.discord".equals(foreground);
                 if (nowDiscord && !discordForeground) dismissed = false;
@@ -70,7 +70,7 @@ public class ManualOverlayService extends Service {
             .setContentText("Tap to manage the floating search")
             .setContentIntent(pi).setOngoing(true).build();
         startForeground(101,notification);
-        overlay=new FloatingSearch(this, () -> {
+        registerReceiver(updates,new android.content.IntentFilter("com.joinedservers.search.GUILDS_UPDATED"),android.content.Context.RECEIVER_NOT_EXPORTED);\n        overlay=new FloatingSearch(this, () -> {
             dismissed = true;
             manual = false;
             if (!monitoring) stopSelf();
@@ -78,7 +78,7 @@ public class ManualOverlayService extends Service {
     }
     @Override public int onStartCommand(Intent intent,int flags,int startId) {
         String action = intent == null ? null : intent.getAction();
-        if (ACTION_MONITOR.equals(action)) {
+        if(DiscordAuth.connected(this))DiscordAuth.sync(this,e->{});\n        if (ACTION_MONITOR.equals(action)) {
             monitoring = true; manual = false;
             handler.removeCallbacks(poll);
             handler.post(poll);
