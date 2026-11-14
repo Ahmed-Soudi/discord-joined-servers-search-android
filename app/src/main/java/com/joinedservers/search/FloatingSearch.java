@@ -63,26 +63,19 @@ public class FloatingSearch {
         search.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int count,int after){} public void onTextChanged(CharSequence s,int start,int before,int count){if(!expanded){expanded=true;scroller.setVisibility(View.VISIBLE);toggle.setText("▴");}refresh();}public void afterTextChanged(Editable e){} });
     }
     private void openDiscordServer(String id) {
-        // Target Discord explicitly so Android does not route the link to Chrome.
-        // NEW_TASK is required because this overlay belongs to a Service.
-        String[] links = {
-            "https://discord.com/channels/" + id,
-            "discord://discord.com/channels/" + id
-        };
-        for (String link : links) {
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(link));
-            intent.setPackage("com.discord");
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            try {
-                context.startActivity(intent);
-                return;
-            } catch (android.content.ActivityNotFoundException ignored) {
-                // Try Discord's custom URI if its HTTPS handler is unavailable.
-            }
+        // Discord's route uses the special "-" host. The previous
+        // discord://discord.com/channels/... URI only launched the app.
+        Intent intent = new Intent(Intent.ACTION_VIEW,
+            Uri.parse("discord://-/channels/" + id));
+        intent.setPackage("com.discord");
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        try {
+            context.startActivity(intent);
+        } catch (android.content.ActivityNotFoundException ex) {
+            android.widget.Toast.makeText(context,
+                "This Discord version cannot handle server deep links.",
+                android.widget.Toast.LENGTH_LONG).show();
         }
-        android.widget.Toast.makeText(context,
-            "Unable to open server in Discord. Check that Discord is installed.",
-            android.widget.Toast.LENGTH_LONG).show();
     }
     private void refresh() {
         if(results==null)return;results.removeAllViews();
